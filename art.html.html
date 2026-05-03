@@ -1,0 +1,1905 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shadiees Art | Mandala Gallery</title>
+<style>
+  html { scroll-behavior: smooth; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #07000f;
+    color: #f0ecff;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  #mandalaCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  #mandalaBg {
+    position: fixed;
+    top: 50%; left: 50%;
+    width: min(100vw, 100vh);
+    height: min(100vw, 100vh);
+    transform: translate(-50%, -50%) rotate(0deg);
+    opacity: 0.13;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: 50%;
+    background: url('mandala.jpg') center/cover no-repeat;
+    animation: bgSpin 40s linear infinite;
+  }
+  @keyframes bgSpin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to   { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  .particle {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1;
+    animation: floatUp linear infinite;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+    10%  { opacity: 0.7; }
+    90%  { opacity: 0.3; }
+    100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+  }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 40px;
+    background: rgba(7,0,15,0.92);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(140,80,220,0.5);
+  }
+  nav h2 {
+    color: #c084fc;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    text-shadow: 0 0 14px #9333ea;
+  }
+  nav a {
+    color: #d8b4fe;
+    margin: 0 12px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.3s;
+  }
+  nav a:hover { color: #fff; }
+
+  /* â”€â”€ HERO: centered layout â”€â”€ */
+  #hero {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 60px;
+  }
+
+  /* centred text column */
+  .hero-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 580px;
+  }
+
+  /* staggered text entry from bottom */
+  .hero-right .hero-name    { animation: slideInUp 0.9s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.15s; }
+  .hero-right .hero-sub     { animation: slideInUp 0.9s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.30s; }
+  .hero-right .bio          { animation: slideInUp 0.9s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.45s; }
+  .hero-right .social-links { animation: slideInUp 0.9s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.60s; }
+  .hero-right .hero-divider { animation: expandWidth 1.0s cubic-bezier(0.22,1,0.36,1) both; animation-delay: 0.35s; }
+
+  @keyframes slideInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes expandWidth {
+    from { opacity: 0; width: 0; }
+    to   { opacity: 1; width: 120px; }
+  }
+
+  /* typing cursor blink on name */
+  .hero-name {
+    font-size: 4.2rem;
+    background: linear-gradient(135deg, #e9d5ff, #fff, #c084fc, #fff, #e9d5ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: slideInUp 0.9s cubic-bezier(0.22,1,0.36,1) both 0.15s,
+               shimmer 3s linear infinite 1.2s;
+    background-size: 200%;
+    letter-spacing: 4px;
+    line-height: 1.1;
+    position: relative;
+  }
+  .hero-name::after {
+    content: '';
+  }
+  @keyframes cursorBlink {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0; }
+  }
+  @keyframes shimmer {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+
+  .hero-divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #7c3aed, #c084fc, #e879f9, transparent);
+    border-radius: 2px;
+    margin: 16px auto 18px;
+    width: 120px;
+  }
+
+  .hero-sub { color: #a78bfa; font-size: 1.05rem; letter-spacing: 1px; margin-bottom: 0; }
+
+  .stats { display: none; }
+  .stat  { display: none; }
+
+  .bio {
+    color: #b8a8d8;
+    line-height: 1.75;
+    font-size: 0.95rem;
+    margin-bottom: 22px;
+  }
+
+  .scroll-down {
+    margin-top: 14px;
+    animation: bounce 2s infinite;
+    color: #c084fc;
+    font-size: 1.6rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(8px); }
+  }
+
+  /* â”€â”€ RESPONSIVE â”€â”€ */
+  @media (max-width: 700px) {
+    #hero { padding: 60px 24px 40px; }
+    .hero-name { font-size: 2.8rem; }
+  }
+
+  #gallery h2 {
+    text-align: center;
+    font-size: 2rem;
+    color: #c084fc;
+    margin-bottom: 10px;
+    text-shadow: 0 0 20px #a855f7;
+    letter-spacing: 2px;
+  }
+  .section-line {
+    width: 80px; height: 3px;
+    background: linear-gradient(90deg, transparent, #a855f7, transparent);
+    margin: 0 auto 40px;
+    border-radius: 2px;
+  }
+
+  .card {
+    background: linear-gradient(145deg, #0e0820, #1a1030);
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(167,139,250,0.18);
+    cursor: pointer;
+    transition: box-shadow 0.35s ease,
+                border-color 0.35s ease,
+                opacity 0.65s cubic-bezier(0.22,1,0.36,1);
+    position: relative;
+    will-change: opacity;
+  }
+  @keyframes fadeInCard {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .card:hover {
+    box-shadow: 0 16px 40px rgba(168,85,247,0.28), 0 0 24px rgba(192,132,252,0.15);
+    border-color: rgba(192,132,252,0.42);
+  }
+
+  .card .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(168,85,247,0.45), transparent 70%);
+    transform: scale(0);
+    animation: rippleOut 0.8s ease-out forwards;
+    pointer-events: none;
+    z-index: 10;
+  }
+  @keyframes rippleOut {
+    0%   { transform: scale(0); opacity: 1; }
+    100% { transform: scale(4); opacity: 0; }
+  }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    border: 2px solid transparent;
+    background: linear-gradient(135deg, #c084fc, #f0abfc, #a78bfa, #c084fc) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  .card:hover::after { opacity: 1; }
+
+  .card-img-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%; height: 100%;
+    background: linear-gradient(120deg, transparent 0%, rgba(220,180,255,0.18) 50%, transparent 100%);
+    transform: skewX(-20deg);
+    transition: none;
+    pointer-events: none;
+  }
+  .card:hover .card-img-wrap::after {
+    animation: shimmerSweep 0.7s ease forwards;
+  }
+  @keyframes shimmerSweep {
+    0%   { left: -100%; }
+    100% { left: 160%; }
+  }
+
+  .burst-dot {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 20;
+    animation: burstFly 0.7s ease-out forwards;
+  }
+  @keyframes burstFly {
+    0%   { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+  }
+
+  .card-img-wrap {
+    position: relative;
+    overflow: hidden;
+    height: 220px;
+  }
+  .card-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+    display: block;
+  }
+  .card:hover .card-img-wrap img { transform: scale(1.08); }
+
+  .card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(14,8,32,0.92) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: flex-end;
+    padding: 16px;
+  }
+  .card:hover .card-overlay { opacity: 1; }
+  .card-overlay span { color: #c084fc; font-size: 0.85rem; letter-spacing: 1px; }
+
+  .card-badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    background: rgba(167,139,250,0.15);
+    border: 1px solid #a78bfa;
+    color: #c084fc;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  .card-body { padding: 16px 18px 12px; }
+  .card-body h3 { font-size: 1rem; color: #ddd6fe; margin-bottom: 8px; }
+  .card-body p  { font-size: 0.82rem; color: #8b7aaa; line-height: 1.6; }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 18px 14px;
+    border-top: 1px solid rgba(167,139,250,0.1);
+  }
+  .card-footer span { font-size: 0.75rem; color: #5c4d7a; }
+  .card-footer .heart { color: #e879f9; font-size: 1rem; cursor: pointer; transition: transform 0.2s; }
+  .card-footer .heart:hover { transform: scale(1.4); }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 40px 20px 60px;
+    position: relative;
+    z-index: 2;
+    flex-wrap: wrap;
+  }
+  .pagination button {
+    padding: 10px 22px;
+    background: transparent;
+    border: 1px solid rgba(167,139,250,0.45);
+    color: #c084fc;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+  }
+  .pagination button:hover:not(:disabled) {
+    background: #a855f7; color: #fff;
+    box-shadow: 0 0 20px #a855f7;
+  }
+  .pagination button:disabled { opacity: 0.3; cursor: default; }
+  .page-num {
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    border: 1px solid transparent;
+    color: #9d8cbf;
+    transition: all 0.3s;
+  }
+  .page-num.active { background: #7c3aed; color: #fff; font-weight: bold; box-shadow: 0 0 15px #a855f7; }
+  .page-num:hover:not(.active) { border-color: #a855f7; color: #c084fc; }
+  .page-info {
+    color: #3d2e5a; font-size: 0.8rem;
+    width: 100%; text-align: center;
+    margin-top: 6px;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(4,0,12,0.92);
+    z-index: 999;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    backdrop-filter: blur(12px);
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal-box {
+    background: linear-gradient(145deg, #0e0820, #1a1030);
+    border: 1px solid rgba(167,139,250,0.35);
+    border-radius: 22px;
+    width: 100%;
+    max-width: 820px;
+    max-height: 92vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: modalIn 0.45s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 0 80px rgba(168,85,247,0.3), 0 0 160px rgba(124,58,237,0.15);
+    position: relative;
+  }
+  @keyframes modalIn {
+    from { transform: scale(0.75); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+  }
+
+  /* image fills correctly — no crop, full picture visible */
+  .modal-img-wrap {
+    width: 100%;
+    background: #07000f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-height: 62vh;
+    overflow: hidden;
+    position: relative;
+  }
+  .modal-img-wrap img {
+    width: 100%;
+    height: 100%;
+    max-height: 62vh;
+    object-fit: contain;   /* show full image, no crop */
+    display: block;
+  }
+
+  /* glow border on image */
+  .modal-img-wrap::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-bottom: 1px solid rgba(167,139,250,0.2);
+    pointer-events: none;
+  }
+
+  /* info section */
+  .modal-info {
+    padding: 20px 24px 22px;
+    overflow-y: auto;
+  }
+  .modal-info-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .modal-info h2 {
+    color: #e9d5ff;
+    font-size: 1.25rem;
+    letter-spacing: 1px;
+    line-height: 1.3;
+  }
+  .modal-tag {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(124,58,237,0.2);
+    border: 1px solid rgba(192,132,252,0.4);
+    color: #c084fc;
+    white-space: nowrap;
+  }
+  .modal-desc {
+    color: #9d8cbf;
+    font-size: 0.92rem;
+    line-height: 1.75;
+    margin-bottom: 14px;
+  }
+  .modal-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+    color: #4a3d6a;
+    letter-spacing: 1px;
+    border-top: 1px solid rgba(167,139,250,0.1);
+    padding-top: 12px;
+  }
+  .modal-meta span { color: #7c3aed; }
+
+  .modal-close {
+    position: absolute;
+    top: 12px; right: 14px;
+    font-size: 1.4rem;
+    color: #c084fc;
+    cursor: pointer;
+    z-index: 1000;
+    transition: transform 0.3s;
+    background: rgba(7,0,15,0.7);
+    border-radius: 50%;
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid rgba(192,132,252,0.3);
+  }
+  .modal-close:hover { transform: rotate(90deg) scale(1.15); color: #fff; }
+
+  @media (max-width: 600px) {
+    .modal-box { max-height: 95vh; border-radius: 16px; }
+    .modal-img-wrap { max-height: 50vh; }
+    .modal-img-wrap img { max-height: 50vh; }
+    .modal-info { padding: 14px 16px 16px; }
+    .modal-info h2 { font-size: 1rem; }
+  }
+
+  footer {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 30px 20px 40px;
+    border-top: 1px solid rgba(124,58,237,0.3);
+    color: #4a3d6a;
+    font-size: 0.85rem;
+  }
+  footer span { color: #9333ea; }
+
+  .footer-social {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 22px;
+  }
+  .footer-social-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 30px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s;
+    min-width: 240px;
+    justify-content: center;
+  }
+  .footer-social-btn.instagram {
+    background: linear-gradient(135deg, #6b21a8, #a855f7, #e879f9);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(168,85,247,0.3);
+  }
+  .footer-social-btn.instagram:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 24px rgba(168,85,247,0.55);
+  }
+  .footer-social-btn.youtube {
+    background: linear-gradient(135deg, #5b21b6, #7c3aed);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(124,58,237,0.3);
+  }
+  .footer-social-btn.youtube:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 24px rgba(124,58,237,0.55);
+  }
+
+  .social-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+  .social-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 28px;
+    border-radius: 14px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    min-width: 240px;
+    justify-content: center;
+    color: #fff;
+    border: 1px solid rgba(192,132,252,0.4);
+    backdrop-filter: blur(6px);
+  }
+  .social-btn.instagram {
+    background: linear-gradient(135deg, rgba(107,33,168,0.5), rgba(168,85,247,0.4), rgba(232,121,249,0.3));
+    box-shadow: 0 0 14px rgba(168,85,247,0.2), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .social-btn.youtube {
+    background: linear-gradient(135deg, rgba(91,33,182,0.5), rgba(124,58,237,0.4));
+    box-shadow: 0 0 14px rgba(124,58,237,0.2), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+
+  .btn-add {
+    padding: 8px 20px;
+    background: transparent;
+    border: 1px solid #a855f7;
+    color: #c084fc;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+  }
+  .btn-add:hover {
+    background: #7c3aed;
+    color: #fff;
+    box-shadow: 0 0 18px #a855f7;
+  }
+
+  /* â”€â”€ PASSWORD MODAL â”€â”€ */
+  .pw-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(4,0,12,0.93);
+    z-index: 1100;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+  }
+  .pw-overlay.open { display: flex; }
+  .pw-box {
+    background: linear-gradient(145deg, #0e0820, #1a1030);
+    border: 1px solid rgba(167,139,250,0.38);
+    border-radius: 20px;
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    animation: modalIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 0 60px rgba(168,85,247,0.18);
+    position: relative;
+  }
+  .pw-box h3 {
+    color: #c084fc;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .pw-box p { color: #7c6b9a; font-size: 0.85rem; margin-bottom: 24px; }
+  .pw-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(167,139,250,0.05);
+    border: 1px solid rgba(167,139,250,0.3);
+    border-radius: 10px;
+    color: white;
+    font-size: 1rem;
+    outline: none;
+    text-align: center;
+    letter-spacing: 3px;
+    transition: border 0.3s;
+    margin-bottom: 16px;
+  }
+  .pw-input:focus { border-color: #a855f7; box-shadow: 0 0 12px rgba(168,85,247,0.25); }
+  .pw-error { color: #f472b6; font-size: 0.82rem; margin-bottom: 12px; min-height: 18px; }
+  .pw-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+  }
+  .pw-btn:hover { box-shadow: 0 0 20px #a855f7; transform: scale(1.02); }
+  .pw-cancel {
+    margin-top: 14px;
+    color: #4a3d6a;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: color 0.3s;
+    display: inline-block;
+  }
+  .pw-cancel:hover { color: #9d8cbf; }
+
+  /* â”€â”€ UPLOAD PANEL â”€â”€ */
+  .upload-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(4,0,12,0.93);
+    z-index: 1100;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    padding: 20px;
+  }
+  .upload-overlay.open { display: flex; }
+  .upload-box {
+    background: linear-gradient(145deg, #0e0820, #1a1030);
+    border: 1px solid rgba(167,139,250,0.38);
+    border-radius: 20px;
+    padding: 36px;
+    width: 100%;
+    max-width: 500px;
+    animation: modalIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 0 60px rgba(168,85,247,0.18);
+    position: relative;
+  }
+  .upload-box h3 {
+    color: #c084fc;
+    font-size: 1.3rem;
+    margin-bottom: 24px;
+    letter-spacing: 1px;
+    text-align: center;
+  }
+  .upload-close {
+    position: absolute;
+    top: 14px; right: 18px;
+    font-size: 1.5rem;
+    color: #c084fc;
+    cursor: pointer;
+    background: rgba(0,0,0,0.4);
+    border-radius: 50%;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.3s;
+  }
+  .upload-close:hover { transform: rotate(90deg); }
+
+  .upload-drop {
+    border: 2px dashed rgba(167,139,250,0.38);
+    border-radius: 14px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .upload-drop:hover, .upload-drop.drag-over {
+    border-color: #a855f7;
+    background: rgba(168,85,247,0.06);
+    box-shadow: 0 0 20px rgba(168,85,247,0.12);
+  }
+  .upload-drop input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%; height: 100%;
+  }
+  .upload-drop .drop-icon { font-size: 2.5rem; margin-bottom: 8px; }
+  .upload-drop p { color: #7c6b9a; font-size: 0.88rem; }
+  .upload-drop p span { color: #c084fc; }
+  .upload-preview {
+    width: 100%;
+    max-height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    display: none;
+    margin-bottom: 16px;
+    border: 1px solid rgba(167,139,250,0.25);
+  }
+
+  .upload-field {
+    width: 100%;
+    padding: 11px 14px;
+    background: rgba(167,139,250,0.05);
+    border: 1px solid rgba(167,139,250,0.2);
+    border-radius: 10px;
+    color: white;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border 0.3s;
+    margin-bottom: 14px;
+    font-family: inherit;
+  }
+  .upload-field:focus { border-color: #a855f7; box-shadow: 0 0 10px rgba(168,85,247,0.18); }
+  textarea.upload-field { resize: vertical; min-height: 80px; }
+
+  .upload-submit {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7, #c084fc);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+  }
+  .upload-submit:hover { box-shadow: 0 0 25px #a855f7; transform: scale(1.02); }
+
+  .upload-success {
+    display: none;
+    text-align: center;
+    padding: 20px 0 10px;
+  }
+  .upload-success .check { font-size: 3rem; animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+  .upload-success p { color: #9d8cbf; margin-top: 10px; font-size: 0.9rem; }
+  @keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+
+  /* â”€â”€ WORD HIGHLIGHTS "” white text, touch animations â”€â”€ */
+
+  /* Base for all highlight words */
+  .hl-glow, .hl-marker, .hl-word, .hl-badge, .hl-shimmer {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Touch / click bounce animation */
+  @keyframes hlTouchBounce {
+    0%   { transform: scale(1); }
+    25%  { transform: scale(1.35) rotate(-4deg); }
+    50%  { transform: scale(0.88) rotate(3deg); }
+    75%  { transform: scale(1.15) rotate(-2deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+
+  /* Touch flash glow */
+  @keyframes hlTouchFlash {
+    0%   { text-shadow: 0 0 0px #fff; }
+    30%  { text-shadow: 0 0 18px #fff, 0 0 36px #c084fc, 0 0 60px #a855f7; }
+    100% { text-shadow: 0 0 0px #fff; }
+  }
+
+  /* Touch ripple ring */
+  @keyframes hlTouchRing {
+    0%   { box-shadow: 0 0 0 0 rgba(192,132,252,0.7); }
+    100% { box-shadow: 0 0 0 18px rgba(192,132,252,0); }
+  }
+
+  /* Applied by JS on touch/click */
+  .hl-touched {
+    animation: hlTouchBounce 0.5s cubic-bezier(0.34,1.56,0.64,1),
+               hlTouchFlash  0.6s ease forwards !important;
+    display: inline-block;
+  }
+
+  /* â”€â”€ hl-glow: nav title "” white with glowing underline â”€â”€ */
+  .hl-glow {
+    position: relative;
+    display: inline-block;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255,255,255,0.4);
+  }
+  .hl-glow::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: -3px;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg, #7c3aed, #c084fc, #fff, #e879f9, #c084fc, #7c3aed);
+    background-size: 200%;
+    border-radius: 2px;
+    animation: hlGlowSlide 2.5s linear infinite;
+    box-shadow: 0 0 8px #c084fc, 0 0 16px #a855f7;
+  }
+  @keyframes hlGlowSlide {
+    0%   { background-position: 0%; }
+    100% { background-position: 200%; }
+  }
+
+  /* â”€â”€ hl-marker: sweep highlight behind word â”€â”€ */
+  .hl-marker {
+    position: relative;
+    display: inline;
+    white-space: nowrap;
+    font-weight: 600;
+    text-shadow: 0 0 8px rgba(255,255,255,0.3);
+  }
+  .hl-marker::before {
+    content: '';
+    position: absolute;
+    left: -3px; top: 10%;
+    height: 85%;
+    width: 0;
+    background: linear-gradient(135deg, rgba(124,58,237,0.5), rgba(232,121,249,0.35));
+    border-radius: 4px;
+    z-index: -1;
+    animation: markerSweep 0.8s cubic-bezier(0.22,1,0.36,1) forwards;
+  }
+  @keyframes markerSweep {
+    0%   { width: 0; opacity: 0; }
+    30%  { opacity: 1; }
+    100% { width: calc(100% + 6px); opacity: 1; }
+  }
+  .hl-marker.d1::before { animation-delay: 0.5s; }
+  .hl-marker.d2::before { animation-delay: 0.8s; }
+  .hl-marker.d3::before { animation-delay: 1.1s; }
+  .hl-marker.d4::before { animation-delay: 1.4s; }
+  .hl-marker.d5::before { animation-delay: 1.7s; }
+
+  /* â”€â”€ hl-word: plain white bold with soft glow â”€â”€ */
+  .hl-word {
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(255,255,255,0.35), 0 0 20px rgba(192,132,252,0.4);
+    display: inline-block;
+    transition: text-shadow 0.3s;
+  }
+  .hl-word:hover {
+    text-shadow: 0 0 16px #fff, 0 0 32px #c084fc;
+  }
+
+  /* â”€â”€ hl-badge: pill box, white text, pulsing border â”€â”€ */
+  .hl-badge {
+    display: inline-block;
+    background: rgba(124,58,237,0.22);
+    border: 1px solid rgba(192,132,252,0.55);
+    border-radius: 6px;
+    padding: 1px 8px;
+    font-weight: 600;
+    text-shadow: 0 0 8px rgba(255,255,255,0.3);
+    animation: badgePulse 2.8s ease-in-out infinite;
+    transition: transform 0.2s;
+  }
+  @keyframes badgePulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(168,85,247,0.4); border-color: rgba(192,132,252,0.55); }
+    50%      { box-shadow: 0 0 14px 4px rgba(168,85,247,0.3); border-color: rgba(255,255,255,0.6); }
+  }
+
+  /* â”€â”€ hl-shimmer: white shimmer sweep â”€â”€ */
+  .hl-shimmer {
+    background: linear-gradient(90deg, #ffffff 0%, #e9d5ff 30%, #ffffff 55%, #c084fc 80%, #ffffff 100%);
+    background-size: 250%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text;
+    animation: hlShimmerMove 3s linear infinite;
+    font-weight: 700;
+  }
+  @keyframes hlShimmerMove {
+    0%   { background-position: 0%; }
+    100% { background-position: 250%; }
+  }
+
+  /* â”€â”€ Nav underline draw on hover â”€â”€ */
+  nav a { position: relative; }
+  nav a::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: -3px;
+    width: 0; height: 2px;
+    background: linear-gradient(90deg, #fff, #e879f9);
+    border-radius: 2px;
+    transition: width 0.35s cubic-bezier(0.22,1,0.36,1);
+    box-shadow: 0 0 6px #fff;
+  }
+  nav a:hover::after { width: 100%; }
+
+  /* â”€â”€ SCROLL PROGRESS BAR â”€â”€ */
+  #scrollBar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, #7c3aed, #c084fc, #e879f9, #fff);
+    z-index: 9999;
+    border-radius: 0 3px 3px 0;
+    box-shadow: 0 0 10px #c084fc, 0 0 20px #a855f7;
+    transition: width 0.05s linear;
+  }
+
+  /* â”€â”€ PARALLAX DEPTH on gallery section â”€â”€ */
+  #gallery {
+    position: relative;
+    z-index: 2;
+    padding: 60px 30px 20px;
+  }
+
+  /* cards-grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* ── FILTER TABS ── */
+  .filter-tabs {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 auto 36px;
+    max-width: 700px;
+  }
+  .filter-btn {
+    padding: 8px 22px;
+    border-radius: 30px;
+    border: 1px solid rgba(167,139,250,0.35);
+    background: transparent;
+    color: #9d8cbf;
+    font-size: 0.88rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .filter-btn:hover {
+    border-color: #a855f7;
+    color: #c084fc;
+  }
+  .filter-btn.active {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 0 18px rgba(168,85,247,0.4);
+  }
+
+  /* â”€â”€ SCROLL REVEAL â”€â”€ */
+  .reveal {
+    opacity: 0;
+    transform: translateY(36px);
+    transition: opacity 0.65s cubic-bezier(0.22,1,0.36,1),
+                transform 0.65s cubic-bezier(0.22,1,0.36,1);
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0) !important;
+  }
+  /* card slide from left */
+  .reveal-left {
+    opacity: 0;
+    transform: translateX(-80px) scale(0.94);
+    transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1),
+                transform 0.7s cubic-bezier(0.22,1,0.36,1);
+  }
+  /* card slide from right */
+  .reveal-right {
+    opacity: 0;
+    transform: translateX(80px) scale(0.94);
+    transition: opacity 0.7s cubic-bezier(0.22,1,0.36,1),
+                transform 0.7s cubic-bezier(0.22,1,0.36,1);
+  }
+  .reveal-left.visible,
+  .reveal-right.visible {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  /* stagger delay helpers */
+  .reveal-d1 { transition-delay: 0.05s; }
+  .reveal-d2 { transition-delay: 0.13s; }
+  .reveal-d3 { transition-delay: 0.21s; }
+  .reveal-d4 { transition-delay: 0.29s; }
+  .reveal-d5 { transition-delay: 0.37s; }
+  .reveal-d6 { transition-delay: 0.45s; }
+
+  /* â”€â”€ Touch spark particle â”€â”€ */
+  .hl-spark {
+    position: fixed;
+    pointer-events: none;
+    border-radius: 50%;
+    z-index: 9999;
+    animation: sparkFly 0.6s ease-out forwards;
+  }
+  @keyframes sparkFly {
+    0%   { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--sx), var(--sy)) scale(0); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="mandalaCanvas"></canvas>
+<div id="mandalaBg"></div>
+<div id="scrollBar"></div>
+
+<nav>
+  <h2>✦ <span class="hl-glow">Shadiees Art</span></h2>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <a href="#hero">Home</a>
+    <a href="#gallery">Creations</a>
+    <a href="about.html">About</a>
+    <button class="btn-add" onclick="openPasswordModal()">+ Add Photo</button>
+  </div>
+</nav>
+
+<section id="hero">
+  <div class="hero-right">
+    <h1 class="hero-name">Shadiees Art</h1>
+    <div class="hero-divider"></div>
+    <p class="hero-sub">
+      <span class="hl-box">Monisha</span> &nbsp;&middot;&nbsp;
+      <span class="hl-box">Self-taught Artist</span>
+    </p>
+
+
+    <p class="bio">
+      <span class="hl-box">Art is therapy</span> &#10022;
+      <span class="hl-box">Mandala</span> &bull;
+      <span class="hl-box">Zentangle</span> &bull;
+      <span class="hl-box">Doodle</span><br>
+      <span class="hl-box">Self-taught artist</span> &nbsp;&middot;&nbsp; &copy;Copyrights Reserved
+    </p>
+
+    <div class="social-links">
+      <div class="social-btn instagram">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        @_shadiees_art
+      </div>
+      <div class="social-btn youtube">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+        @_shadiees_art
+      </div>
+    </div>
+
+    <div class="scroll-down" onclick="document.getElementById('gallery').scrollIntoView({behavior:'smooth'})">&#8595;</div>
+  </div>
+
+</section>
+
+<section id="gallery">
+  <h2 class="reveal">✦ <span class="hl-shimmer">Creations</span></h2>
+  <div class="section-line reveal reveal-d1"></div>
+  <div class="cards-grid" id="cardsGrid"></div>
+</section>
+
+<div class="pagination" id="pagination"></div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box" id="modalBox">
+    <div class="modal-close" id="modalClose">&#10005;</div>
+    <div class="modal-img-wrap">
+      <img id="modalImg" src="" alt="">
+    </div>
+    <div class="modal-info">
+      <div class="modal-info-top">
+        <h2 id="modalTitle"></h2>
+        <span class="modal-tag" id="modalTag">✦ Shadiees Art</span>
+      </div>
+      <p class="modal-desc" id="modalDesc"></p>
+      <div class="modal-meta">
+        <div>📅 <span id="modalDate"></span></div>
+        <div>🎨 <span>Hand-drawn · Pen on Paper</span></div>
+        <div>©️ <span>Shadiees Art — All Rights Reserved</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="reveal">
+  <div class="footer-social">
+    <div class="footer-social-btn instagram">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      Instagram &nbsp;·&nbsp; @_shadiees_art
+    </div>
+    <div class="footer-social-btn youtube">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+      YouTube &nbsp;·&nbsp; @_shadiees_art
+    </div>
+  </div>
+  <p style="margin-top:22px; color:#7c6b9a; font-size:0.88rem; letter-spacing:2px;">
+    ✦ <span class="hl-badge">Art is Therapy</span> ✦
+  </p>
+</footer>
+
+<!-- PASSWORD MODAL -->
+<div class="pw-overlay" id="pwOverlay">
+  <div class="pw-box">
+    <h3> <span class="hl-word">Admin Access</span></h3>
+    <p>Enter the password to add a new photo</p>
+    <input class="pw-input" type="password" id="pwInput" placeholder="••••••••••" maxlength="20"
+      onkeydown="if(event.key==='Enter') checkPassword()">
+    <div class="pw-error" id="pwError"></div>
+    <button class="pw-btn" onclick="checkPassword()">Unlock</button>
+    <div class="pw-cancel" onclick="closePwModal()">Cancel</div>
+  </div>
+</div>
+
+<!-- UPLOAD PANEL -->
+<div class="upload-overlay" id="uploadOverlay">
+  <div class="upload-box">
+    <div class="upload-close" onclick="closeUpload()">&#10005;</div>
+    <h3>✦ <span class="hl-shimmer">Add New Artwork</span></h3>
+
+    <div class="upload-success" id="uploadSuccess">
+      <div class="check">&#9989;</div>
+      <p>Artwork added to the gallery!</p>
+    </div>
+
+    <div id="uploadForm">
+      <div class="upload-drop" id="uploadDrop">
+        <input type="file" id="fileInput" accept="image/*" onchange="previewImage(this)">
+        <div class="drop-icon">&#128444;</div>
+        <p>Drag & drop or <span>click to choose</span> an image</p>
+      </div>
+      <img class="upload-preview" id="uploadPreview" src="" alt="Preview">
+      <input class="upload-field" type="text" id="uploadTitle" placeholder="Artwork title (e.g. Lotus Mandala No.101)">
+      <textarea class="upload-field" id="uploadDesc" placeholder="Description "” tell the story behind this piece..."></textarea>
+      <button class="upload-submit" onclick="submitArtwork()">✦ Add to Gallery</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// â”€â”€ BACKGROUND "” Purple Flower Design â”€â”€
+(function () {
+  const canvas = document.getElementById('mandalaCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, angle = 0;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function drawFlower(ox, oy, r, rot, alpha) {
+    ctx.save();
+    ctx.translate(ox, oy);
+    ctx.rotate(rot);
+    ctx.globalAlpha = alpha;
+
+    // layer 1: 8 large outer petals "” deep violet
+    for (var i = 0; i < 8; i++) {
+      ctx.save();
+      ctx.rotate((Math.PI * 2 / 8) * i);
+      ctx.beginPath();
+      ctx.moveTo(0, r * 0.30);
+      ctx.bezierCurveTo( r * 0.28, r * 0.55,  r * 0.28, r * 0.90, 0, r);
+      ctx.bezierCurveTo(-r * 0.28, r * 0.90, -r * 0.28, r * 0.55, 0, r * 0.30);
+      ctx.closePath();
+      var pg = ctx.createLinearGradient(0, r * 0.30, 0, r);
+      pg.addColorStop(0,   'rgba(220,180,255,0.65)');
+      pg.addColorStop(0.4, 'rgba(168,85,247,0.45)');
+      pg.addColorStop(1,   'rgba(90,20,160,0.15)');
+      ctx.fillStyle = pg;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(192,132,252,0.50)';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // layer 2: 12 medium petals "” lavender
+    for (var i = 0; i < 12; i++) {
+      ctx.save();
+      ctx.rotate((Math.PI * 2 / 12) * i + Math.PI / 12);
+      ctx.beginPath();
+      ctx.moveTo(0, r * 0.22);
+      ctx.bezierCurveTo( r * 0.18, r * 0.42,  r * 0.18, r * 0.70, 0, r * 0.76);
+      ctx.bezierCurveTo(-r * 0.18, r * 0.70, -r * 0.18, r * 0.42, 0, r * 0.22);
+      ctx.closePath();
+      var mg = ctx.createLinearGradient(0, r * 0.22, 0, r * 0.76);
+      mg.addColorStop(0,   'rgba(232,210,255,0.55)');
+      mg.addColorStop(0.5, 'rgba(147,51,234,0.38)');
+      mg.addColorStop(1,   'rgba(80,10,140,0.14)');
+      ctx.fillStyle = mg;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(167,139,250,0.40)';
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // layer 3: 16 small inner petals "” bright lavender
+    for (var i = 0; i < 16; i++) {
+      ctx.save();
+      ctx.rotate((Math.PI * 2 / 16) * i);
+      ctx.beginPath();
+      ctx.moveTo(0, r * 0.14);
+      ctx.bezierCurveTo( r * 0.10, r * 0.26,  r * 0.10, r * 0.44, 0, r * 0.48);
+      ctx.bezierCurveTo(-r * 0.10, r * 0.44, -r * 0.10, r * 0.26, 0, r * 0.14);
+      ctx.closePath();
+      var sg = ctx.createLinearGradient(0, r * 0.14, 0, r * 0.48);
+      sg.addColorStop(0,   'rgba(245,225,255,0.65)');
+      sg.addColorStop(0.5, 'rgba(192,132,252,0.45)');
+      sg.addColorStop(1,   'rgba(124,58,237,0.18)');
+      ctx.fillStyle = sg;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(216,180,254,0.45)';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // layer 4: dot ring (32)
+    for (var i = 0; i < 32; i++) {
+      var a = (Math.PI * 2 / 32) * i;
+      ctx.beginPath();
+      ctx.arc(Math.cos(a) * r * 0.58, Math.sin(a) * r * 0.58, 1.4, 0, Math.PI * 2);
+      ctx.fillStyle = i % 2 === 0 ? 'rgba(192,132,252,0.75)' : 'rgba(232,121,249,0.55)';
+      ctx.fill();
+    }
+
+    // layer 5: inner dot ring (20)
+    for (var i = 0; i < 20; i++) {
+      var a = (Math.PI * 2 / 20) * i;
+      ctx.beginPath();
+      ctx.arc(Math.cos(a) * r * 0.30, Math.sin(a) * r * 0.30, 1.0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(221,180,255,0.65)';
+      ctx.fill();
+    }
+
+    // concentric rings
+    [0.30, 0.50, 0.70, 0.88, 1.0].forEach(function(rf, ri) {
+      ctx.beginPath();
+      ctx.arc(0, 0, r * rf, 0, Math.PI * 2);
+      ctx.strokeStyle = ri % 2 === 0
+        ? 'rgba(168,85,247,0.25)'
+        : 'rgba(124,58,237,0.18)';
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+    });
+
+    // centre bloom glow
+    var cg = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.16);
+    cg.addColorStop(0,   'rgba(240,220,255,0.80)');
+    cg.addColorStop(0.4, 'rgba(192,132,252,0.50)');
+    cg.addColorStop(1,   'rgba(124,58,237,0.0)');
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.16, 0, Math.PI * 2);
+    ctx.fillStyle = cg;
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    var base = Math.min(W, H) * 0.48;
+    drawFlower(W / 2, H / 2, base,        angle,        0.22);
+    drawFlower(W / 2, H / 2, base * 0.65, -angle * 1.2, 0.15);
+    drawFlower(W / 2, H / 2, base * 0.38,  angle * 2.0, 0.12);
+    drawFlower(0,  0,  130,  angle * 0.8, 0.09);
+    drawFlower(W,  0,  130, -angle * 0.8, 0.09);
+    drawFlower(0,  H,  130, -angle * 0.6, 0.09);
+    drawFlower(W,  H,  130,  angle * 0.6, 0.09);
+    angle += 0.0018;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// â”€â”€ PARTICLES "” purple palette â”€â”€
+(function () {
+  var colors = ['#c084fc','#e879f9','#a78bfa','#818cf8','#f0abfc','#ddd6fe'];
+  for (var i = 0; i < 28; i++) {
+    var p = document.createElement('div');
+    p.className = 'particle';
+    var size = Math.random() * 5 + 2;
+    p.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:' + (Math.random()*100) + 'vw;background:' + colors[Math.floor(Math.random()*colors.length)] + ';animation-duration:' + (Math.random()*14+8) + 's;animation-delay:' + (Math.random()*10) + 's;box-shadow:0 0 ' + (size*2) + 'px currentColor;';
+    document.body.appendChild(p);
+  }
+})();
+
+// â”€â”€ RIPPLE + BURST â”€â”€
+var burstColors = ['#c084fc','#e879f9','#a78bfa','#818cf8','#f0abfc','#ddd6fe'];
+
+function spawnRipple(card, x, y) {
+  var size = Math.max(card.offsetWidth, card.offsetHeight) * 1.2;
+  var ripple = document.createElement('div');
+  ripple.className = 'ripple';
+  ripple.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:' + (x - size/2) + 'px;top:' + (y - size/2) + 'px;';
+  card.appendChild(ripple);
+  ripple.addEventListener('animationend', function(){ ripple.remove(); });
+}
+
+function spawnBurst(card, x, y) {
+  var count = 10;
+  for (var i = 0; i < count; i++) {
+    (function(i){
+      var dot = document.createElement('div');
+      dot.className = 'burst-dot';
+      var angle = (360 / count) * i;
+      var dist  = 50 + Math.random() * 40;
+      var rad   = angle * Math.PI / 180;
+      var tx    = Math.cos(rad) * dist;
+      var ty    = Math.sin(rad) * dist;
+      var col   = burstColors[i % burstColors.length];
+      dot.style.cssText = 'left:' + x + 'px;top:' + y + 'px;background:' + col + ';--tx:' + tx + 'px;--ty:' + ty + 'px;box-shadow:0 0 6px ' + col + ';';
+      card.appendChild(dot);
+      dot.addEventListener('animationend', function(){ dot.remove(); });
+    })(i);
+  }
+}
+
+function attachCardEffects() {
+  document.querySelectorAll('.card').forEach(function(card) {
+    if (card._effectsAttached) return;
+    card._effectsAttached = true;
+    function trigger(e) {
+      var rect = card.getBoundingClientRect();
+      var cx, cy;
+      if (e.touches && e.touches[0]) {
+        cx = e.touches[0].clientX - rect.left;
+        cy = e.touches[0].clientY - rect.top;
+      } else {
+        cx = e.clientX - rect.left;
+        cy = e.clientY - rect.top;
+      }
+      spawnRipple(card, cx, cy);
+      spawnBurst(card, cx, cy);
+    }
+    card.addEventListener('mousedown',  trigger);
+    card.addEventListener('touchstart', trigger, { passive: true });
+  });
+}
+
+// â”€â”€ ART DATA â”€â”€
+// 110 mandala & art images "” replace any src with your own image link anytime
+
+var myImages = [
+  
+  { src: '048427e2-085c-4ec3-a79d-58ab6e6cafd8.jpg', date: '2024-01-01', title: 'Ganesha', desc: 'Finally, here is our cute baby Ganesha 😍 Share your views on this work ❤️' },
+  { src: '07a102dd-bfb0-411a-b300-bc90fe7aceaa.jpg', date: '2024-01-02', title: 'Mini Mandala', desc: 'I have tried some stippling and effects to my work this time and I\'m loving this mini ones 😍Share your thoughts about this ❤' },
+  { src: '08483d49-4e7b-4c4a-ba30-7e9189e8c565.jpg', date: '2024-01-03', title: 'Mandalas', desc: 'Happy with the final outcome 😍I thoroughly enjoyed making this piece of work. It took me almost 20 hours to finish and working on these kind of mandalas has helped me to be more focused and relaxed. Im loving this!Hope you guys will love it too 😊❤' },
+  { src: '0ba66bc8-6725-4278-8e75-73633b5f41bd.jpg', date: '2024-01-04', title: 'Butterfly Mandala', desc: 'I thoroughly enjoyed the full process of this work💙. Finally ended up adding blue shades in it🦋.' },
+  { src: '10d21bd6-a931-4029-9624-aa662222ac7c.jpg', date: '2024-01-05', title: 'BLACK AND WHITE DOODLE CATS', desc: '#doodleart #doodlecats #oneofmyfavs #shadieesart#doodlesofinstagram #zentangle#blackandwhite #catsofinstagram #cats#catswithpatterns #doodlesketch #zentanglepatterns💕' },
+  { src: '10fb577c-04ce-4314-996b-485747990e93.jpg', date: '2024-01-06', title: 'Portrait art', desc: 'For the first time 🌚 #triedout' },
+  { src: '16768d9c-bb76-481e-a61f-8e20e9b74d39.jpg', date: '2024-01-07', title: 'Black and White Mandla', desc: 'It\'s almost six hours of work continuously. This time i made the background full black with white dots in it. It turns out really good. I love it 🖤. Hope you guys will love it too 😊' },
+  { src: '18b18913-73a4-4d02-b10f-bef5b53827cc.jpg', date: '2024-01-08', title: 'Lines and curves', desc: 'My kind of RELAXATION ❤✍' },
+  { src: '1a975b5a-8e79-4020-8737-89e3a8c956e0.jpg', date: '2024-01-09', title: 'Geometric flower', desc: '3/15 of watercolour mandala journey' },
+  { src: '21f7b88f-ef27-4295-9800-d1c7aba47e5c.jpg', date: '2024-01-10', title: 'Customised artwork', desc: 'For the lovely girlfriend from her man @barath_parthasarathy for her birthday.A single sheet of paper describes all the memories, thoughts and lovely moments!!' },
+  { src: '22cbd999-bade-40f2-87f9-837cc719742c.jpg', date: '2024-01-11', title: 'Flower patterns', desc: '#doodlingart✍️#firsttry#blackandwhite #creative#zendoodles#doodlelove#doodleflowers #shadieesart' },
+  { src: '2e552515-5168-42db-bf0a-45078cf3bd71.jpg', date: '2024-01-12', title: 'Minion with Mandala', desc: 'I have illustrated minion with mandala this time . I ended up adding blue shades and stippling to it and I\'m loving the final outcome😍🙈. Kindly Share your thoughts about this piece 😊❤' },
+  { src: '2f9e9f52-0435-4599-9395-5ca3e57ba9e5.jpg', date: '2024-01-13', title: 'Black and yellow version', desc: '#illustrationart#doodle #doodleofinstagram #doodlesharingpage #doodleindia #doodleart #blackandyellow #shadieesart #doodle #doodleoftheday #illustration #doodleofinstagram #repeatpatterns #doodles #doodlelove #illustrate #illustrationoftheday #doodle_art 🌟' },
+  { src: '37947800-96ef-4ef6-8241-1a8a9633f25e.jpg', date: '2024-01-14', title: 'Floral designs', desc: 'Keep going.Everything you need will come to you at the perfect time Another one in watercolours 😍Loving creating floral designs💙💜' },
+  { src: '385756d4-fcc3-4128-a69e-f6369ef436b1.jpg', date: '2024-01-15', title: 'A Flower Blossoms', desc: 'A flower blossoms for its own joy' },
+  { src: '3dca3aa0-eefc-4595-99a4-eea7e5246106.jpg', date: '2024-01-16', title: 'Illustrated Turtle', desc: 'I have illustrated turtle in black and white with zentangle and mandala in it. Tried out something different this time. Ended up with adding shades in it. I love my turtle 🖤' },
+  { src: '3f2ea16c-ab9a-4a16-b4ba-ca063aff4052.jpg', date: '2024-01-17', title: 'Digital Mandala', desc: 'First Digital Mandala 🥰♥️' },
+  { src: '409d7b6a-0cdf-4d0a-9234-065524de9215.jpg', date: '2024-01-18', title: 'Watercolour Mandala', desc: 'Blue and green💙💚 Traditional Mandala (round shape )' },
+  { src: '45e534ae-f7a1-4f60-9892-183e2d3ec2a1.jpg', date: '2024-01-19', title: 'Quotes', desc: 'Follow👉 your heart💗 Listen to your Inner voiceStop caring about what others think.' },
+  { src: '476995a0-6a4f-4f56-9eef-1d9b7ba7e5ee.jpg', date: '2024-01-20', title: 'Portrait', desc: 'Second portrait work ✍Baby picture @sa._.reine_ 😍This was the gift to her for her birthday❤#surprise #forbestfriendI hope she likes it .' },
+  { src: '4f08df25-d597-44af-b585-f32d07cfe67c.jpg', date: '2024-02-01', title: 'Brusto fineliners', desc: 'where creativity and meditation meet ✨🧡.' },
+  { src: '4fc45ee9-81b5-46ff-a0b3-5c2b7c3c344c.jpg', date: '2024-02-02', title: 'MUSHROOM DOODLES', desc: '#doodleart #mushroomdoodles🖊 #blackandwhite #mushrooms #art #agaricus #mushroomart #doodlesofinstagram #handwork #shadieesart #zendoodleart #mushroom🍄😍 #doodles #sketchdoodle #mushroomsofinstagram #doodleofaday ♥' },
+  { src: '4feb6c2c-546b-4952-9dc6-a36aac5480ea.jpg', date: '2024-02-03', title: 'Painted Mandala', desc: '#pinkypinky💖Micacoated wood base#wood #creativework #paintingart#mandalatheraphy' },
+  { src: '519d0b47-d514-456f-976a-6e7f49bfbf5a.jpg', date: '2024-02-04', title: 'Mandala art', desc: 'Mandala art 🖤💫 Adding to the collection.' },
+  { src: '52d75892-bc00-4ff1-b623-e4e47620b4f3.jpg', date: '2024-02-05', title: 'Quotes', desc: 'Let your Dreams be your Wings ❤' },
+  { src: '5449358a-9216-4fb5-8b3f-c1e5018b465a.jpg', date: '2024-02-06', title: 'Catpaw', desc: 'Catpaw 🐾doodle♥' },
+  { src: '5685d639-63ac-4a8c-9103-81e24c36bfa4.jpg', date: '2024-02-07', title: 'Embrace your own pace', desc: 'Playing with brush pens is soo relaxing and fun. I\'m loving this colour combo 💚💙.Hope you all love it too.Share your views on this 😍' },
+  { src: '57a1928d-8aa5-4a9a-8673-9f00d52ccc41.jpg', date: '2024-02-08', title: 'Zendoodle', desc: '#doodleart #zendoodlesoninstagram#drawing #curvelines#art #black#white#doodlesketch#doodle#repeatpattern#doodledoodle #shadieesart' },
+  { src: '5b8cc980-4794-42dc-9d6a-fd0d76ef8c07.jpg', date: '2024-02-09', title: 'Line art', desc: 'Relaxation therapy ✍✌My second entry for art in motion challenge.Theme : florals' },
+  { src: '5dc87d49-071c-48b7-80be-c15fdfc5c951.jpg', date: '2024-02-10', title: 'Mandala art', desc: 'Colour is descriptive . Black and white is interpretive - Eliott Erwitt.' },
+  { src: '61367090-4721-46f7-8f86-4190d77f44a8.jpg', date: '2024-02-11', title: 'Buddha doodle', desc: 'Buddha doodle art ♥✨' },
+  { src: '628914b5-3ad7-4d1e-9dbd-63e04fddd53f.jpg', date: '2024-02-12', title: 'Quotes', desc: 'JUst EnJOy wHEre YoU ArE nOW ❤And sPeNd yOUr tYm vAluaBLE eVeRy DaY✌.' },
+  { src: '63a5460b-2052-4a67-8ed2-137e7371f3d3.jpg', date: '2024-02-13', title: 'Zentangle Pattern', desc: 'Eyes of the beholder in zentangle pattern👀' },
+  { src: '65093b6b-9375-4368-9103-9e6744926e5b.jpg', date: '2024-02-14', title: 'Black and White Mandala', desc: 'I\'ll always love the time I spent making \'Black and White\' Mandala 🖤🩶' },
+  { src: '65af3265-480b-42d8-9c9d-18f414062457.jpg', date: '2024-02-15', title: 'Mandala with blue watercolour', desc: 'Mandala with blue watercolour base. Took Five to six hours to finish this one and tried to add more details in it.I enjoyed creating this inverted Mandala😍.' },
+  { src: '6647120b-a2dc-4ca1-8d2e-43ea6cfd86f5.jpg', date: '2024-02-16', title: 'Full Page Mandala', desc: 'Finished with full page mandala.It turns out really well 🔸️. I hope you guys will love it ❤. Share your views on this one😊and Swipe to see more pictures .' },
+  { src: '6b142509-461f-4455-bd71-1a9698bc5c15.jpg', date: '2024-02-17', title: 'Mandala', desc: 'Mandala 🌟 Thoroughly enjoyed playing with jelly roll pens. Share your views on this one ❤️' },
+  { src: '6ceaf6ec-f374-4596-ac6b-694f47f60597.jpg', date: '2024-02-18', title: 'Square/Triangle Mandala', desc: 'Here is my entry for #7mandalaschallenge hosted by @ataraxiaowl and @that.crazy.doodler' },
+  { src: '6cf52782-41f3-4ce5-87b0-096ce5670291.jpg', date: '2024-02-19', title: 'Human Heart Doodle', desc: '"You will never beable to escape fromyour heart❤. So it\'sbetter to listen towhat it has to say " ~paulo coelho .' },
+  { src: '712f50aa-fcf3-4236-964b-3e731f5fd6da.jpg', date: '2024-02-20', title: 'Mandala', desc: 'Finished with this mandala 💙 i loveee it😍 and i stopped counting the hours 🙈 in making this one. It turns out really well.I hope you guys will love it 💙' },
+  { src: '72f33a5a-aa51-4f51-8795-5268064b52ee.jpg', date: '2024-03-01', title: 'Doodle Art', desc: 'Playing with two kinds of patterns is fun and relaxing 😍❤' },
+  { src: '74105836-a929-40b9-abca-0f517325f1b9.jpg', date: '2024-03-02', title: 'Line art', desc: 'I feel relaxed when I sit with this kind of works .' },
+  { src: '7561394c-a4d1-44cd-a657-b7b47b245795.jpg', date: '2024-03-03', title: 'Quotes', desc: 'Little things make big days 💯💙' },
+  { src: '761a71a1-8275-4dff-be4b-fabcc8bd6277.jpg', date: '2024-03-04', title: 'Mandala', desc: 'Done ! ❤It took me almost 20 hours to finish it . And I\'m so happy to see how this mandala turn out😍. Im totally loving this!' },
+  { src: '769caa8f-64da-4692-8039-c6438ab3c074.jpg', date: '2024-03-05', title: 'A GiRL With  Brancheyes', desc: 'A GiRL With #brancheyes and #leaflashes 🖤.' },
+  { src: '7c73383f-314b-4e7c-8235-4ec3d8e53c85.jpg', date: '2024-03-06', title: 'Mandala', desc: 'Here is my First collaboration work with one of the best and creative artist @ataraxiaowl .' },
+  { src: '818efcd1-1b81-4183-bad5-a22a6a2d9d18.jpg', date: '2024-03-07', title: 'Thaarame Mandala', desc: 'Done💜Finally finished after 24 hours of work on it 😍 I named it as "Thaarame Mandala".' },
+  { src: '821d3248-bbfb-4ae1-9b7c-13f33ee53508.jpg', date: '2024-03-08', title: 'Quotes', desc: 'Positive lettering 💯✌ •• YOU CAN DO IT •• 👍' },
+  { src: '8327c722-f1ea-4aa5-8647-5739bd064488.jpg', date: '2024-03-09', title: 'Love Birds', desc: 'LoVe BiRdS 🐦✨❤#pencilart .' },
+  { src: '85560b5e-0939-4b67-80a1-76ff3529dca3.jpg', date: '2024-03-10', title: 'Butterfly Mandala', desc: 'Tried out galaxy effect in watercolours' },
+  { src: '86f8815a-288e-473c-9e5c-5fe18276b0a8.jpg', date: '2024-03-11', title: 'Flower Patterns', desc: 'Happiness is the art of relaxation 💗' },
+  { src: '888fe1ee-314b-4cbf-8e9a-51d5db017561.jpg', date: '2024-03-12', title: 'Gold Fish', desc: 'Gold fish💛 -> black and white fish🖤🤍' },
+  { src: '8ae73af4-45b2-4a36-bde6-e07421e9c27a.jpg', date: '2024-03-13', title: 'Zendoodle', desc: 'Zendoodle - lines and curves#illusiondoodle .' },
+  { src: '8d83846b-c8ea-480b-9ecf-a3329982dc67.jpg', date: '2024-03-14', title: 'Beach vibes with mandala', desc: 'Happiness comes in waves💙Tried Beach vibes with mandala😍Thoroughly enjoyed making this one.Swipe to see next picture and share your views!' },
+  { src: '92dfe993-aa52-44c7-98ea-60d5f47c37f9.jpg', date: '2024-03-15', title: 'Mandala', desc: 'If it makes you feel happy ,go for it ❤✌Do more things 💥' },
+  { src: '9479d3d6-4f18-4f4b-a834-33943c76f578.jpg', date: '2024-03-16', title: 'Ovals and lines', desc: 'Ovals and lines.#zendoodle .' },
+  { src: '9b1c8a1c-f543-440e-90cc-5a0688bd9c0a.jpg', date: '2024-03-17', title: 'Watercolour Mandala', desc: 'Starting 15 days watercolour mandala journey with this yellow and black one 😍' },
+  { src: '9e28fd2a-2d0e-4e0a-9000-44c7dc765ad5.jpg', date: '2024-03-18', title: 'Bloom', desc: 'Bloom where you are Planted 💙' },
+  { src: '9e5e2fb6-4248-449b-96b5-87ef699b1866.jpg', date: '2024-03-19', title: 'Swirl of Imagination', desc: '“Just me, my pen, and a swirl of imagination 😍🖤”' },
+  { src: 'a0a9fce2-eb14-4d74-98a1-9f752a484e7b.jpg', date: '2024-03-20', title: 'Wood Art', desc: 'Some creative work ❤😍. .' },
+  { src: 'a3c31ec7-2759-47d8-9948-63e8c2e64c3b.jpg', date: '2024-04-01', title: 'Circular Mandala', desc: 'Take time to do what makes your soul HAPPY ❤💫. Here,my first entry for single circular mandala #zenartfeatures .' },
+  { src: 'a869cfbf-90f9-4993-90bf-0346affb3731.jpg', date: '2024-04-02', title: 'Galaxy ice cream', desc: 'Done with Galaxy ice cream 🍦💙Here is my entry for #7mandalaschallengeI love the whole process of this work 😍. Hope you all love it too 💙' },
+  { src: 'a99d5836-a2ac-4652-88e6-3c0260c0a8aa.jpg', date: '2024-04-03', title: 'CHOOSE to SHINE', desc: 'CHOOSE to SHINE 💫❤ #watercolourpainting' },
+  { src: 'aa710419-e141-431b-a025-751c69aeec16.jpg', date: '2024-04-04', title: 'Owl Doodle', desc: 'You will miss the best things if you keep your eyes shut .' },
+  { src: 'ac735a24-330f-47c8-9e77-64bf02c79db9.jpg', date: '2024-04-05', title: 'Tree Doodle', desc: 'If you don\'t like where you are, MOVE, you are not a tree.🤘#treedoodleart .' },
+  { src: 'af9a0dd9-d364-4f91-93c3-d2940848326e.jpg', date: '2024-04-06', title: 'LORD KRISHNA', desc: 'LORD KRISHNA 🙏#godartPeaceful work ❤Inspired - > pinterest .' },
+  { src: 'b220ef89-39c2-487f-bea8-a014d9cbd749.jpg', date: '2024-04-07', title: 'Siddhartha Gauthama Buddh', desc: '"If we are facing in the right direction, all we have to do is keep on walking "~ Buddha ~' },
+  { src: 'b5852c4c-81bb-4f68-b78d-2fd6b9629710.jpg', date: '2024-04-08', title: 'Black and white Mandala', desc: 'Black and white Mandala 😍#cartoon mandala' },
+  { src: 'b5fa9b65-32e2-45fc-99a8-e7f0c72d756f.jpg', date: '2024-04-09', title: 'Torus Mandala', desc: 'ToRuS mAnDalA ❤🌚 .' },
+  { src: 'b6f3ab4f-49f3-4281-9bb7-e65eb5413643.jpg', date: '2024-04-10', title: 'Green Background With Mandala', desc: 'In love with creating this two shades of green background with mandala 💚' },
+  { src: 'b8848b12-7c57-4676-b8eb-39fac9891c7d.jpg', date: '2024-04-11', title: 'Full Page Mandala', desc: 'Finally done with full page mandala.It turns out really well 😍. I have added some effects to it and done it on a bigger scale this time😍I hope you guys will love it ❤.' },
+  { src: 'bb14adc5-e0c3-4a99-ad87-40c913923d26.jpg', date: '2024-04-12', title: 'Name Artwork', desc: 'My first name artwork😍Santheeya varshini❤' },
+  { src: 'bd02fbd5-2375-4002-9994-c5e7e23d713d.jpg', date: '2024-04-13', title: 'Quotes', desc: 'Yes !! Keep going with the positivity 💯Don\'t appreciate negative vibes around you✌' },
+  { src: 'bd75801c-f555-4acf-8db3-d4620c3f522a.jpg', date: '2024-04-14', title: 'Flowers in watercolours', desc: 'Tried to create this after watching @rimjhim_artopia\'s video . I love her floral patterns so that i just tried on creating this one❤ . I\'m loving this 😍Hope you guys will love it .' },
+  { src: 'c10f08e4-0687-48d6-bcba-b4fcbc86690c.jpg', date: '2024-04-15', title: 'World Map Mandala', desc: 'Wherever you go, Go with all your heart 💙🧡Prompt 2: World Map Mandala' },
+  { src: 'c1ddf9e3-2581-4a89-92f7-ac70bbc61a44.jpg', date: '2024-04-16', title: 'Eye', desc: 'I tried out drawing an #eye and here is the final outcome 😍. Tried something different this time. Hope you guys will love it ❤' },
+  { src: 'c4a1cb02-a841-4f42-b1d3-534cc6d85f96.jpg', date: '2024-04-17', title: 'Lord Ganesha', desc: 'Lord Ganesha 🙏💫' },
+  { src: 'c68e671f-eeeb-4718-b678-728a068f4184.jpg', date: '2024-04-18', title: 'Spider Web Art', desc: 'Learning to weave webs of love, respect and divine connection is a life skill for happiness 💫' },
+  { src: 'c8ec19b8-0a0c-4cab-bc09-e70663a8efa4.jpg', date: '2024-04-19', title: 'Semi circle Mandala', desc: 'Here is my entry for #mfmcontest (semi circle mandala).I know its late entry but I thoroughly enjoyed making this one with jelly roll pens 😍. Trying out new medium and styles 🙈. I hope you all love it 💚' },
+  { src: 'cbefe464-0203-4c43-92e3-735a28895e38.jpg', date: '2024-04-20', title: 'Leaf Pattern', desc: 'Beauty in simple things#leaves 🌿' },
+  { src: 'cf1b9649-6a1f-44a2-815f-d77ba396e3da.jpg', date: '2024-05-01', title: 'Mandala', desc: 'Mandala remind me that peace is a pattern I can practice ♥️' },
+  { src: 'd14083ad-6bd2-43db-b554-9946398324dc.jpg', date: '2024-05-02', title: 'Tom and jerry', desc: 'This time Tom and jerry ❤ with colourful mandala work😍' },
+  { src: 'd2553acf-7d87-41a1-ae66-771b9c770c49.jpg', date: '2024-05-03', title: 'Arrow Mandala', desc: 'Finally done with Arrow Mandala.It turns out really well 😍. I have added some effects to it and made it as 3D Mandala 😍I hope you all will love it ❤.' },
+  { src: 'd2c5cd1d-f80c-44bf-b7ea-2e99f3e10b7a.jpg', date: '2024-05-04', title: 'Marine life Mandala', desc: 'Marine life MandalaHere is my entry for #7mandalaschallengeHosted by @ataraxiaowl and @that.crazy.doodler' },
+  { src: 'd3aadd79-0865-4998-aa6f-fe15b2f01e97.jpg', date: '2024-05-05', title: 'Spiral Mandala', desc: 'I thoroughly enjoyed making this spiral mandala work with red and black ❤🖤. Swipe to see the original work of @gurpreetgillbrar' },
+  { src: 'd91f0134-774d-4f9b-bcd5-9939d5e10f52.jpg', date: '2024-05-06', title: 'Flower Art', desc: 'Flower art with water colours😍💕' },
+  { src: 'de09b65f-0469-4852-ba7a-db8e44c4c337.jpg', date: '2024-05-07', title: 'Money Heist', desc: 'LACASA DE PAPEL 😍The only thing we need to do is BUY TIME - Professor (Money Heist) .' },
+  { src: 'e0d74746-807b-4bdb-95da-53b637b0ac25.jpg', date: '2024-05-08', title: 'Cute Baby Elephant', desc: 'I have illustrated a cute baby elephant this time in black and white. I named it as Bubblu ❤. Say Hii to Bubblu andKindly share your thoughts about this one😊' },
+  { src: 'e2be3766-292d-4f3b-b9f2-c1014f4d449c.jpg', date: '2024-05-09', title: 'Quotes', desc: 'NEVER ACCEPT THE LESS THAN THE BEST🤘' },
+  { src: 'e5e2b986-f8ff-4bb1-9958-2e4288787b63.jpg', date: '2024-05-10', title: 'Mandala + quotes', desc: 'Mandala + quotes❤Making these two was soo fun and relaxing.. I thoroughly enjoyed blending the colours and learning new things😊' },
+  { src: 'e8f22a30-135c-4ae8-9b8a-444f9678ec31.jpg', date: '2024-05-11', title: 'Name Art', desc: 'Customised artwork ❤' },
+  { src: 'ec386b9f-195d-453d-97c4-fee198e2cc2f.jpg', date: '2024-05-12', title: 'Laughing baby buddha', desc: 'Laughing baby buddha❤😁 #mandalaart .One of my favourite art 😍❤ .' },
+  { src: 'f2939bbc-9396-45ec-9367-742f38f7133f.jpg', date: '2024-05-13', title: 'Quotes', desc: 'Everything blooms in its own time💙' },
+  { src: 'fc38583c-c68e-4be4-b8ca-9cfb0e61908a.jpg', date: '2024-05-14', title: 'Mandala artwork', desc: 'Mandala artwork ❤💫 #blueandblackMy second entry for Single circular mandala #zenartfeaturesIn love with my work 😍' },
+  { src: 'fd539cb0-2fa8-4b26-a732-6f4f5daefdb5.jpg', date: '2024-05-15', title: 'MA ROI (MY KING)', desc: 'Happiness doesn\'t result from what we get, But from what we give ❤😍Here is one of my special gifts to the one I love the most 😍- MA ROI (MY KING) - @stephan_romeo_robert#happy23❤️' }
+
+
+// Copy this code and replace the myImages array in your HTML file (around line 1449)
+// This will save your titles and descriptions permanently in the file
+];
+
+var artworks = [];
+
+var PER_PAGE      = 6;
+var currentPage   = 1;
+var currentFilter = 'all';
+var categories    = ['Mandala','Zentangle','Doodle','Portrait'];
+
+// Load artworks from myImages array
+myImages.forEach(function(item, i) {
+  artworks.push({
+    id:    i + 1,
+    src:   item.src,
+    title: item.title || 'Artwork #' + (i + 1),
+    desc:  item.desc || 'An original artwork by Shadiees Art. ©Shadiees Art',
+    style: 'Original',
+    likes: 0,
+    date:  item.date,
+    category: categories[i % categories.length]
+  });
+});
+
+function setFilter(cat, btn) {
+  currentFilter = cat;
+  currentPage   = 1;
+  document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderCards();
+}
+
+function filteredArtworks() {
+  if (currentFilter === 'all') return artworks;
+  return artworks.filter(function(a){ return a.category === currentFilter; });
+}
+
+var totalPages = Math.ceil(artworks.length / PER_PAGE);
+
+function renderCards() {
+  var list  = filteredArtworks();
+  totalPages = Math.ceil(list.length / PER_PAGE);
+  if (currentPage > totalPages) currentPage = 1;
+  var grid  = document.getElementById('cardsGrid');
+  grid.innerHTML = '';
+  var start = (currentPage - 1) * PER_PAGE;
+  var slice = list.slice(start, start + PER_PAGE);
+
+  slice.forEach(function (art, idx) {
+    var card = document.createElement('div');
+    var dir  = idx % 2 === 0 ? 'reveal-left' : 'reveal-right';
+    var delayClass = 'reveal-d' + Math.min((idx % 6) + 1, 6);
+    card.className = 'card ' + dir + ' ' + delayClass;
+    card.style.animationDelay = (idx * 0.06) + 's';
+    card.innerHTML =
+      '<div class="card-img-wrap">' +
+        '<img src="' + art.src + '" alt="' + art.title + '" loading="lazy">' +
+        '<div class="card-overlay"><span>✦ View Details</span></div>' +
+        '<div class="card-badge">' + art.style + '</div>' +
+      '</div>' +
+      '<div class="card-body">' +
+        '<h3>' + art.title + '</h3>' +
+      '</div>';
+    card.addEventListener('click', (function(a){ return function(){ openModal(a); }; })(art));
+    grid.appendChild(card);
+  });
+
+  window.scrollTo({ top: document.getElementById('gallery').offsetTop - 80, behavior: 'smooth' });
+  renderPagination();
+  setTimeout(attachCardEffects, 50);
+}
+
+function renderPagination() {
+  var pg = document.getElementById('pagination');
+  pg.innerHTML = '';
+
+  var prev = document.createElement('button');
+  prev.textContent = '\u2190 Prev';
+  prev.disabled = currentPage === 1;
+  prev.onclick = function () { currentPage--; renderCards(); };
+  pg.appendChild(prev);
+
+  var s = Math.max(1, currentPage - 3);
+  var e = Math.min(totalPages, s + 6);
+  if (e - s < 6) s = Math.max(1, e - 6);
+  for (var p = s; p <= e; p++) {
+    (function(pg_num){
+      var btn = document.createElement('span');
+      btn.className = 'page-num' + (pg_num === currentPage ? ' active' : '');
+      btn.textContent = pg_num;
+      btn.onclick = function () { currentPage = pg_num; renderCards(); };
+      pg.appendChild(btn);
+    })(p);
+  }
+
+  var next = document.createElement('button');
+  next.textContent = 'Next \u2192';
+  next.disabled = currentPage === totalPages;
+  next.onclick = function () { currentPage++; renderCards(); };
+  pg.appendChild(next);
+}
+
+var currentArt = null;
+
+function openModal(art) {
+  currentArt = art;
+  document.getElementById('modalImg').src        = art.src;
+  document.getElementById('modalImg').alt        = art.title;
+  document.getElementById('modalTitle').textContent = art.title;
+  document.getElementById('modalDesc').textContent  = art.desc || 'A beautiful hand-drawn piece by Shadiees Art.';
+  document.getElementById('modalDate').textContent  = art.date || '';
+  document.getElementById('modalTag').textContent   = art.style ? '✦ ' + art.style : '✦ Shadiees Art';
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalOverlay').addEventListener('click', function (e) {
+  if (e.target === this) closeModal();
+});
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') closeModal();
+});
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  currentArt = null;
+}
+
+renderCards();
+
+var ADMIN_PASSWORD = 'moni0501';
+var uploadedImageSrc = '';
+
+function openPasswordModal() {
+  document.getElementById('pwInput').value = '';
+  document.getElementById('pwError').textContent = '';
+  document.getElementById('pwOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ document.getElementById('pwInput').focus(); }, 200);
+}
+
+function closePwModal() {
+  document.getElementById('pwOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function checkPassword() {
+  var val = document.getElementById('pwInput').value;
+  if (val === ADMIN_PASSWORD) {
+    closePwModal();
+    openUpload();
+  } else {
+    var err = document.getElementById('pwError');
+    err.textContent = 'âœ• Incorrect password. Try again.';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+    document.getElementById('pwInput').style.borderColor = '#f472b6';
+    setTimeout(function(){
+      document.getElementById('pwInput').style.borderColor = '';
+      err.textContent = '';
+    }, 2000);
+  }
+}
+
+function openUpload() {
+  uploadedImageSrc = '';
+  document.getElementById('uploadPreview').style.display = 'none';
+  document.getElementById('uploadPreview').src = '';
+  document.getElementById('uploadTitle').value = '';
+  document.getElementById('uploadDesc').value = '';
+  document.getElementById('uploadSuccess').style.display = 'none';
+  document.getElementById('uploadForm').style.display = 'block';
+  document.getElementById('uploadOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeUpload() {
+  document.getElementById('uploadOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function previewImage(input) {
+  if (input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      uploadedImageSrc = e.target.result;
+      var prev = document.getElementById('uploadPreview');
+      prev.src = uploadedImageSrc;
+      prev.style.display = 'block';
+      document.getElementById('uploadDrop').querySelector('p').innerHTML = 'âœ” Image selected "” <span>change</span>';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  var drop = document.getElementById('uploadDrop');
+  if (drop) {
+    drop.addEventListener('dragover',  function(){ drop.classList.add('drag-over'); });
+    drop.addEventListener('dragleave', function(){ drop.classList.remove('drag-over'); });
+    drop.addEventListener('drop',      function(){ drop.classList.remove('drag-over'); });
+  }
+});
+
+function submitArtwork() {
+  var title = document.getElementById('uploadTitle').value.trim();
+  var desc  = document.getElementById('uploadDesc').value.trim();
+
+  if (!uploadedImageSrc) { alert('Please choose an image first.'); return; }
+  if (!title) {
+    document.getElementById('uploadTitle').focus();
+    document.getElementById('uploadTitle').style.borderColor = '#f472b6';
+    setTimeout(function(){ document.getElementById('uploadTitle').style.borderColor = ''; }, 1500);
+    return;
+  }
+
+  var today = new Date();
+  var mm = String(today.getMonth()+1).padStart(2,'0');
+  var dd = String(today.getDate()).padStart(2,'0');
+  artworks.unshift({
+    id:    artworks.length + 1,
+    src:   uploadedImageSrc,
+    title: title,
+    desc:  desc || 'A beautiful original artwork by Shadiees Art. \u00a9Shadiees Art',
+    style: 'Original',
+    likes: 0,
+    date:  today.getFullYear() + '-' + mm + '-' + dd,
+    category: categories[0]
+  });
+
+  totalPages = Math.ceil(artworks.length / PER_PAGE);
+  currentPage = 1;
+
+  document.getElementById('uploadForm').style.display = 'none';
+  document.getElementById('uploadSuccess').style.display = 'block';
+
+  setTimeout(function(){ closeUpload(); renderCards(); }, 1800);
+}
+
+// â”€â”€ COUNTER ANIMATION â”€â”€
+function animateCount(id, target, duration) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var start = 0;
+  var step = target / (duration / 16);
+  var timer = setInterval(function() {
+    start += step;
+    if (start >= target) { el.textContent = target; clearInterval(timer); return; }
+    el.textContent = Math.floor(start);
+  }, 16);
+}
+setTimeout(function() {
+}, 700);
+
+// â”€â”€ TOUCH / CLICK ANIMATIONS FOR HIGHLIGHT WORDS â”€â”€
+(function () {
+  var sparkColors = ['#ffffff','#c084fc','#e879f9','#a855f7','#f0abfc','#ddd6fe'];
+
+  function spawnSparks(el, e) {
+    var rect = el.getBoundingClientRect();
+    var cx = rect.left + rect.width  / 2;
+    var cy = rect.top  + rect.height / 2;
+
+    // use touch coords if available
+    if (e && e.touches && e.touches[0]) {
+      cx = e.touches[0].clientX;
+      cy = e.touches[0].clientY;
+    } else if (e && e.clientX) {
+      cx = e.clientX;
+      cy = e.clientY;
+    }
+
+    var count = 10;
+    for (var i = 0; i < count; i++) {
+      (function(i) {
+        var spark = document.createElement('div');
+        spark.className = 'hl-spark';
+        var angle = (360 / count) * i + (Math.random() * 20 - 10);
+        var dist  = 30 + Math.random() * 40;
+        var rad   = angle * Math.PI / 180;
+        var sx    = Math.cos(rad) * dist;
+        var sy    = Math.sin(rad) * dist;
+        var size  = 4 + Math.random() * 5;
+        var col   = sparkColors[i % sparkColors.length];
+        spark.style.cssText =
+          'left:' + cx + 'px;' +
+          'top:'  + cy + 'px;' +
+          'width:' + size + 'px;' +
+          'height:' + size + 'px;' +
+          'background:' + col + ';' +
+          'box-shadow: 0 0 6px ' + col + ';' +
+          '--sx:' + sx + 'px;' +
+          '--sy:' + sy + 'px;' +
+          'animation-delay:' + (i * 0.03) + 's;';
+        document.body.appendChild(spark);
+        spark.addEventListener('animationend', function () { spark.remove(); });
+      })(i);
+    }
+  }
+
+  function triggerHL(el, e) {
+    // bounce + flash
+    el.classList.remove('hl-touched');
+    void el.offsetWidth; // reflow to restart animation
+    el.classList.add('hl-touched');
+    el.addEventListener('animationend', function handler() {
+      el.classList.remove('hl-touched');
+      el.removeEventListener('animationend', handler);
+    });
+    // sparks
+    spawnSparks(el, e);
+  }
+
+  function attachHL(el) {
+    el.addEventListener('touchstart', function (e) {
+      triggerHL(el, e);
+    }, { passive: true });
+    el.addEventListener('click', function (e) {
+      triggerHL(el, e);
+    });
+  }
+
+  // attach to all highlight elements
+  document.querySelectorAll('.hl-glow, .hl-marker, .hl-word, .hl-badge, .hl-shimmer')
+    .forEach(attachHL);
+})();
+
+// â”€â”€ SCROLL PROGRESS BAR + PARALLAX â”€â”€
+(function () {
+  var bar       = document.getElementById('scrollBar');
+  var mandalaBg = document.getElementById('mandalaBg');
+
+  function onScroll() {
+    var scrollY   = window.scrollY || 0;
+    var maxScroll = Math.max(document.body.scrollHeight - window.innerHeight, 1);
+    var pct       = scrollY / maxScroll;
+    var raw       = Math.min(scrollY / (window.innerHeight * 0.8), 1);
+
+    // â”€â”€ progress bar â”€â”€
+    bar.style.width = (pct * 100).toFixed(2) + '%';
+
+    // â”€â”€ mandalaBg parallax â”€â”€
+    var bgScale = 1 + raw * 0.35;
+    var bgY     = scrollY * 0.28;
+    mandalaBg.style.transform =
+      'translate(-50%, calc(-50% + ' + bgY + 'px)) rotate(' +
+      (scrollY * 0.04) + 'deg) scale(' + bgScale + ')';
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+
+// â”€â”€ SCROLL REVEAL â”€â”€
+(function () {
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.10 });
+
+  // observe static reveal elements
+  function observeAll() {
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(function (el) {
+      if (!el._revealObserved) {
+        el._revealObserved = true;
+        io.observe(el);
+      }
+    });
+  }
+  observeAll();
+
+  // watch cards grid for new cards added by pagination
+  var cardObserver = new MutationObserver(function () {
+    document.querySelectorAll('.reveal-left, .reveal-right').forEach(function (el) {
+      if (!el._revealObserved) {
+        el._revealObserved = true;
+        io.observe(el);
+      }
+    });
+  });
+  cardObserver.observe(document.getElementById('cardsGrid'), { childList: true });
+})();
+</script>
+</body>
+</html>
+
+
+
+
+
